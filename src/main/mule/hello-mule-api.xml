@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="94f501a7-3b88-4a26-998d-b3cc5e642b15" basePath="hello-mule-api" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="hello-mule-apiFlow" doc:id="e6a0ee94-6e7b-40df-bc93-6f742fcda2cf" >
+		<http:listener doc:name="Listener" doc:id="563d5403-8c43-437f-a00f-1ba0d1dd2f0e" config-ref="HTTP_Listener_config" path="hello-mule" allowedMethods="GET"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c7780a41-e2cb-4309-8158-8398c94c7f42" message="Welcome to mule ESB"/>
+	</flow>
+	<flow name="hello-mule-apiFlow1" doc:id="dee714fd-70ba-4f91-be3d-02f624cedd40" >
+		<http:listener doc:name="Listener" doc:id="d73ee2e8-5984-4b07-a79c-7088f938a8e3" config-ref="HTTP_Listener_config" path="hi"/>
+		<logger level="INFO" doc:name="Logger" doc:id="5341363c-ff6b-4764-a762-559349f30c8b" message="Hi mule ESB"/>
+	</flow>
+</mule>
