@@ -9,10 +9,9 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	</http:listener-config>
 	<flow name="hello-mule-apiFlow" doc:id="e6a0ee94-6e7b-40df-bc93-6f742fcda2cf" >
 		<http:listener doc:name="Listener" doc:id="563d5403-8c43-437f-a00f-1ba0d1dd2f0e" config-ref="HTTP_Listener_config" path="hello-mule" allowedMethods="GET"/>
-		<logger level="INFO" doc:name="Logger" doc:id="c7780a41-e2cb-4309-8158-8398c94c7f42" message="Welcome to mule ESB"/>
-	</flow>
-	<flow name="hello-mule-apiFlow1" doc:id="dee714fd-70ba-4f91-be3d-02f624cedd40" >
-		<http:listener doc:name="Listener" doc:id="d73ee2e8-5984-4b07-a79c-7088f938a8e3" config-ref="HTTP_Listener_config" path="hi"/>
-		<logger level="INFO" doc:name="Logger" doc:id="5341363c-ff6b-4764-a762-559349f30c8b" message="Hi mule ESB"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c7780a41-e2cb-4309-8158-8398c94c7f42" message="logger 1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="16e92fb6-3534-4052-9b2a-6e0fb11b2929" message="logger 2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="25ebf45a-0718-49f5-a6cd-1bb758631d5c" message="logger 3"/>
+		<logger level="INFO" doc:name="Logger" doc:id="2cdff0f6-bb7e-4e5d-b6c9-77ceb1363c62" message="logger 4"/>
 	</flow>
 </mule>
