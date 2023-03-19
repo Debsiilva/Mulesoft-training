@@ -8,7 +8,13 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<flow name="register-covid-caseFlow" doc:id="9f46ecf5-aa08-4f5f-846d-7059510ae03a" >
-		<http:listener doc:name="Listener" doc:id="a54586d3-218f-425e-92d9-a475ac9e51e6" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST"/>
+		<http:listener doc:name="Listener" doc:id="a54586d3-218f-425e-92d9-a475ac9e51e6" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
+			<http:response statusCode="200" reasonPhrase='#["Ok"]' >
+				<http:body ><![CDATA[#["sucess"]]]></http:body>
+			</http:response>
+		</http:listener>
 		<logger level="INFO" doc:name="Logger" doc:id="caff7c19-b52b-4ec1-b574-584386c0f549" message="#[payload]"/>
+		<set-variable value="#[payload.firstName]" doc:name="Set Variable" doc:id="9b25843c-1e37-48fd-b140-9654b089d4c6" variableName="userName"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f9a50c46-21ef-4f03-b91a-c4da8883105b" message="#[vars.userName]"/>
 	</flow>
 </mule>
