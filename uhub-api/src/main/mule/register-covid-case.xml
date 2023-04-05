@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e46486fc-f6e5-4dde-a14e-e9918bd31270" basePath="covid" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
@@ -16,5 +17,23 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<logger level="INFO" doc:name="Logger" doc:id="caff7c19-b52b-4ec1-b574-584386c0f549" message="#[payload]"/>
 		<set-variable value="#[payload.firstName]" doc:name="Set Variable" doc:id="9b25843c-1e37-48fd-b140-9654b089d4c6" variableName="userName"/>
 		<logger level="INFO" doc:name="Logger" doc:id="f9a50c46-21ef-4f03-b91a-c4da8883105b" message="#[vars.userName]"/>
+		<ee:transform doc:name="Transform Message" doc:id="415f6e56-70e3-4b7e-8464-67ce92b7b194" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	COVID_CASE: {
+		FIRST_NAME: payload.firstName,
+		LAST_NAME: payload.lastName,
+		PHONE: payload.phone,
+		EMAIL: payload.email,
+		DATE_OF_BIRTH: payload.dateOfBirth as Date,
+		COUNTRY: payload.address.country
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d145dee0-475f-443b-b917-ce87fdf6472e" message="#[payload]"/>
 	</flow>
 </mule>
