@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener-connection host="0.0.0.0" port="8091" />
 	</http:listener-config>
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="b1dd749b-7e3b-44a6-bbfa-f6a8e3a1ab45" >
-		<db:oracle-connection host="localhost" user="system" password="447848" instance="XE" />
+		<db:oracle-connection host="localhost" user="system" password="tiger" instance="XE" />
 	</db:config>
 	<flow name="create-employeeFlow" doc:id="ea8f656e-dfb1-4b7f-bb91-90add4004e1e" >
 		<http:listener doc:name="Create Employee Listener" doc:id="846d531d-8f3a-4b6a-afeb-6df28a692b69" config-ref="HTTP_Listener_config" path="create-employee"/>

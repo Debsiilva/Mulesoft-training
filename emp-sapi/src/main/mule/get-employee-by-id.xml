@@ -6,29 +6,27 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<flow name="update-employeeFlow" doc:id="6f208386-173e-488b-9c99-ccd41ab33c95" >
-		<http:listener doc:name="Update Employee Listener" doc:id="17ba460c-fc34-4b76-8317-54ec316e3f29" config-ref="HTTP_Listener_config" path="update-employee" allowedMethods="PUT"/>
-		<logger level="INFO" doc:name="Start Log" doc:id="2432dd08-9e42-47a7-9e98-545965cadc9d" message="Started update employee flow"/>
-		<db:update doc:name="Update" doc:id="fcd1cc9d-685e-4408-b6a8-f0b71274e8d4" config-ref="Database_Config">
-			<db:sql ><![CDATA[update emp set emp_name=:empName where emp_id=:empID]]></db:sql>
+	<flow name="get-employee-by-idFlow" doc:id="11f75621-da9b-415e-963d-15445d589fa1" >
+		<http:listener doc:name="Get Employee Listener" doc:id="76678325-732c-4f2f-bc45-0a7a7e0133e9" config-ref="HTTP_Listener_config" path="get-employee"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="dd56efed-9d33-4644-a737-e48b735945c5" message="Started get eployee by id flow"/>
+		<db:select doc:name="Select Employee" doc:id="3d588641-5167-4c0c-be54-e6b61549c00a" config-ref="Database_Config">
+			<db:sql ><![CDATA[select emp_id, emp_name, emp_status from emp where emp_id=:empID]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{
-	empName: payload.employee.employeeName,
-	empID: payload.employee.employeeID
+	empID: attributes.queryParams.employeeID
 }]]]></db:input-parameters>
-		</db:update>
-		<ee:transform doc:name="Set Response" doc:id="198c6b30-e36c-45be-a553-9c1eea112e1f" >
+		</db:select>
+		<ee:transform doc:name="Set Response" doc:id="2be698b6-9377-492f-8404-d26e36ef983f" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/xml
+output application/json
 ---
 {
-	response: {
-		status: 200,
-		message: "Sucess"
-	}
+	employeeID: payload[0].emp_id,
+	employeeName: payload[0].emp_name,
+	employeeStatus: payload[0].emp_status
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="End Log" doc:id="85ffe70b-4b80-4c81-b5a3-a57309879cc5" message="Completed update employee flow"/>
+		<logger level="INFO" doc:name="End Log" doc:id="a619f524-6100-4bbe-981c-12b51fde9646" message="Completed get employee flow"/>
 	</flow>
 </mule>

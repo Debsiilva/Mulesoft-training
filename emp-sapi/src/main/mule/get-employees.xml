@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-employeesFlow" doc:id="2c515f4b-826f-4eb2-96a8-486b92739d3e" >
+		<http:listener doc:name="Listener" doc:id="2b1697ab-bd9a-47f6-a408-58c6b3c44445" config-ref="HTTP_Listener_config" path="get-employees"/>
+		<logger level="INFO" doc:name="Start Log" doc:id="e51ff6ef-6093-420e-8c95-4c6923b5142e" message="Started get employees flow"/>
+		<db:select doc:name="Select Employees" doc:id="aa94429b-d671-4e37-9232-cf0d46f862c9" config-ref="Database_Config">
+			<db:sql ><![CDATA[select emp_id, emp_name, emp_status from emp]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Set Response" doc:id="dc13f44b-28c6-40e3-bc81-80ca2e64a0c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	employeeID: payload01.EMP_ID default 0,
+	employeeName: payload01.EMP_NAME default "",
+	employeeStatus: payload01.EMP_STATUS default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Log" doc:id="7f110eb5-3833-4547-a036-e23c6eb4159a" message="Get employees flow has completed"/>
+	</flow>
+</mule>
