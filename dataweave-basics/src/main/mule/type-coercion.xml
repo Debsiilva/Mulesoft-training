@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="type-coercionFlow" doc:id="f4bf1bc8-fab2-4c3f-84dd-8c55dcaff921" >
+		<ee:transform doc:name="Transform Message" doc:id="356625f0-dedd-4cfa-9531-cd32a37efc99" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+
+//payload.address.postal as Number
+//payload.isActive as Boolean
+payload.dateOfBirth as Date {format: "yyy/MM/dd"}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="now-function" doc:id="37c7cbff-fee6-4375-9992-6f9158caec0b" >
+		<ee:transform doc:name="Transform Message" doc:id="03642bc4-62bd-4d4f-a647-a3249428bda3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"date-now": now() as Date,
+	"date-time": now() as Time,
+	"date-in-MMMM-format": now() as String {format: "MMMM"},
+	"date-in-yyyy/MM/dd-format": now() as String {format: "yyyy/MM/dd"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

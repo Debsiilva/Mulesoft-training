@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e46486fc-f6e5-4dde-a14e-e9918bd31270" basePath="covid" >
 		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="1cf42fb2-831b-4e52-9d8d-49d9e09ce2af" >
+		<db:oracle-connection password="tiger" host="localhost" user="system" instance="XE"/>
+	</db:config>
 	<flow name="register-covid-caseFlow" doc:id="9f46ecf5-aa08-4f5f-846d-7059510ae03a" >
 		<http:listener doc:name="Listener" doc:id="a54586d3-218f-425e-92d9-a475ac9e51e6" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="POST">
 			<http:response statusCode="200" reasonPhrase='#["Ok"]' >
@@ -35,5 +39,68 @@ output application/xml
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="d145dee0-475f-443b-b917-ce87fdf6472e" message="#[payload]"/>
+	</flow>
+	<flow name="transformations-variables" doc:id="96ef5e71-bf59-4b00-91c1-924163c443c2" >
+		<http:listener doc:name="Listener" doc:id="f571d520-4674-4b9a-a0f3-180ff824d1e9" config-ref="HTTP_Listener_config" path="v1/transformations">
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.httpReason]" />
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="7731efb9-4293-4bc7-930a-bf481a99a1d5" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="e27fcd88-802b-4630-8ce8-504101498d05" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["sucess-response"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpReason" ><![CDATA["Ok"]]></ee:set-variable>
+				<ee:set-variable variableName="statusCode" ><![CDATA[200]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="3f7eb05f-0616-4646-a1bf-77287ca1d8bb" message="temp"/>
+	</flow>
+	<flow name="dw-variables" doc:id="40e7b17c-bbc3-43aa-a231-bce2e3c223c1" >
+		<http:listener doc:name="Listener" doc:id="9c8b8e51-2f3a-40b2-8878-3a814af4d3d7" config-ref="HTTP_Listener_config" path="v1/dw/variables" >
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.httpReason]" />
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="0244d659-d23a-4c66-ab0d-9021eb28c46f" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="89786782-b3e3-4bcd-98e3-f7276818089e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+var owner = "UHIS"
+---
+{
+	source: payload.source,
+	case_type: payload.caseType,
+	first_name: payload.firstName,
+	last_name: payload.lastName,
+	phone: (payload.phonedefault "") ++ payload.phone,
+	email: payload.email,
+	date_of_birth: payload.dateOfBirth,
+	national_id_type: payload.nationalIDType,
+	national_id: payload.nationalID,
+	street_address: payload.address.streetAddress,
+	city: payload.address.city,
+	state: payload.address.state,
+	postal: payload.address.postal,
+	country: payload.address.country,
+	update_date: owner,
+	create_by: owner,
+	update_by: owner
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="c716e52a-3dab-4bf3-b8a0-87cf0243ab6f" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into cvd_case_master(source, case_type, first_name, last_name, phone, email, date_of_birth, national_id_type,national_id, street_address,city, state,postal, country, update_date, create_by, update_by) values(:source,:case_type, :first_name, :last_name, :phone, :email, :date_of_birth, :national_id_type,:national_id,:street_address,:city,:state,:postal, :country, :update_date, :create_by, :update_by)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="20cc165c-92ad-4240-97e1-f218cb31cb77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["sucess-response"]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpReason" ><![CDATA["Ok"]]></ee:set-variable>
+				<ee:set-variable variableName="statusCode" ><![CDATA[200]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger1" doc:id="28fe5da5-9af3-48e3-af21-e2241da1bfee" message="temp" />
 	</flow>
 </mule>

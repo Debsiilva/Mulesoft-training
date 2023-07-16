@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
   <types:catalog>
-    <types:type name="register-covid-case-meta-data" format="json">
+    <types:type name="covid-register-case-meta-data" format="json">
       <types:shape format="weave" example="examples/register-covid-case-request-payload.json"><![CDATA[%dw 2.0
 
-type register_covid_case_meta_data = {|
+type covid_register_case_meta_data = {|
   source: String, 
   caseType: String, 
   firstName: String, 
@@ -25,46 +25,42 @@ type register_covid_case_meta_data = {|
 
 ]]></types:shape>
     </types:type>
-    <types:type name="who-case-meta-data" format="xml">
-      <types:example format="xml" element="COVID_CASE" location="examples/who-covid-case-request-payload.xml"/>
-    </types:type>
     <types:type name="update-covid-case-meta-data" format="xml">
       <types:example format="xml" element="covidCase" location="examples/update-covid-case-payload.xml"/>
     </types:type>
   </types:catalog>
-  <types:enrichment select="#415f6e56-70e3-4b7e-8464-67ce92b7b194">
+  <types:enrichment select="#f9045b3d-0550-4447-9197-6176a0aa6417">
     <types:processor-declaration>
       <types:input-event>
         <types:message>
-          <types:payload type="register-covid-case-meta-data"/>
+          <types:payload type="covid-register-case-meta-data"/>
         </types:message>
       </types:input-event>
-      <types:output-event>
-        <types:message>
-          <types:payload type="who-case-meta-data"/>
-        </types:message>
-      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
-  <types:enrichment select="#b21d6e9a-7238-4a9c-b50a-65a369917818">
+  <types:enrichment select="#71ff1676-05d9-47e5-a67b-319a80dddb6c">
     <types:processor-declaration>
       <types:input-event>
         <types:message>
           <types:payload type="update-covid-case-meta-data"/>
         </types:message>
       </types:input-event>
-      <types:output-event>
-        <types:message>
-          <types:payload type="register-covid-case-meta-data"/>
-        </types:message>
-      </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
-  <types:enrichment select="#89786782-b3e3-4bcd-98e3-f7276818089e">
+  <types:enrichment select="#872a473a-dad7-4359-b1b4-92c656c1cde7">
     <types:processor-declaration>
       <types:input-event>
         <types:message>
-          <types:payload type="register-covid-case-meta-data"/>
+          <types:payload type="update-covid-case-meta-data"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#356625f0-dedd-4cfa-9531-cd32a37efc99">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="covid-register-case-meta-data"/>
         </types:message>
       </types:input-event>
     </types:processor-declaration>
