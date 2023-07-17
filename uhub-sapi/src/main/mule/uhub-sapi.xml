@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="cbbd8a00-ae05-40b9-8486-ce0e9a665815" >
+		<db:oracle-connection host="localhost" user="SYSTEM" password="tiger" instance="XE" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="72c4db6c-76b3-4f63-bbd3-8028fcac258d" basePath="covid" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="uhub-sapiFlow" doc:id="39fa2c06-48ba-4eaa-bc7c-fcc22bca0eeb" >
+		<http:listener doc:name="Listener" doc:id="1b8c5c88-0963-449d-80d6-774e8c531e50" config-ref="HTTP_Listener_config" path="v1/cases">
+			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusReason]" />
+		</http:listener>
+		<logger level="INFO" doc:name="Start Log" doc:id="d008aca6-cbe4-46c1-92dc-50b2c472d1e3" message='Started insert covid case flow", payload: #[payload]'/>
+		<ee:transform doc:name="Prepare Covid Case Payload" doc:id="519ad1cd-9fca-4e2f-bdce-a809fd5b1ed5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="covidPayload" ><![CDATA[%dw 2.0
+output application/java
+var actionDate = now()
+var owner = "UHIS"
+---
+{
+	source: payload.source,
+	case_type: payload.caseType,
+	first_name: payload.firstName,
+	last_name: payload.lastName,
+	phone: payload.phone,
+	email: payload.email,
+	date_of_birth: actionDate,
+	national_id: payload.nationalID,
+	national_id_type: payload.nationalIDType,
+	street_address: payload.address.streetAddress,
+	city: payload.address.city,
+	state: payload.address.state,
+	postal: payload.address.postal,
+	country: payload.address.country,
+	create_date: actionDate,
+	update_date: actionDate,
+	create_by: owner,
+	update_by: owner
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:insert doc:name="Insert Covid Case Master" doc:id="37d0f27f-6595-423c-8c2c-34c0063cf7d0" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into CVD_CASE_MASTER(source, case_type, first_name, last_name, phone, email, date_of_birth, national_id, national_id_type, street_address, city, state, postal, country, create_date, update_date, create_by, update_by) values(:source, :case_type, :first_name, :last_name, :phone, :email, :date_of_birth, :national_id, :national_id_type, :street_address, :city, :state, :postal, :country, :create_date,:update_date, :create_by, :update_by)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[vars.covidPayload]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="Select CASE_ID" doc:id="c8e7c20e-43c0-441d-aefc-1d7c0faaa4b9" config-ref="Database_Config">
+			<db:sql ><![CDATA[select max(case_id) as case_id from cvd_case_master where national_id = :nationalID]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{	
+	nationalID: vars.covidPayload.national_id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Prepare Response" doc:id="1fa0a854-611a-4549-85e4-ffe46603f2c5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"caseID": payload[0].CASE_ID
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="statusCode" ><![CDATA[201]]></ee:set-variable>
+				<ee:set-variable variableName="statusReason" ><![CDATA["OK"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Log" doc:id="deb9fd25-fcbb-4e87-ad6b-ba560d3e3eb8" />
+	</flow>
+</mule>
